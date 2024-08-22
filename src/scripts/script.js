@@ -1,6 +1,9 @@
 const mobileNav = document.querySelector(".hamburger");
 const navbar = document.querySelector(".menubar");
 let archivos = []
+
+
+
 const toggleNav = () => {
   navbar.classList.toggle("active");
   mobileNav.classList.toggle("hamburger-active");
