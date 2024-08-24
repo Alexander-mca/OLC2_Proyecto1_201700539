@@ -1,7 +1,27 @@
 //Gramatica dedicada al analisis del lenguaje Oakland
 
+Instrucciones 
+= first:Instrucciones second:Instruccion
+ /first:Instruccion
 
+ Instruccion
+ = head: Declaracion
 
+Declaracion
+= head:Tipo Id "=" tail:Expresion ";"
+ /head:Tipo Id ";"
+ / "var" Id "=" Expresion ";"
+
+ Tipo
+ = "int"
+    /"float"
+    /"string"
+    /"char"
+    /"bool"
+
+Expresion
+= Integer
+ /Id
 
 
 
