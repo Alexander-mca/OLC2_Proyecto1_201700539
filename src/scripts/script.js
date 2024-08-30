@@ -1,5 +1,6 @@
 const mobileNav = document.querySelector(".hamburger");
 const navbar = document.querySelector(".menubar");
+const parser = require('../parser/parser');
 let archivos = []
 
 
@@ -53,7 +54,9 @@ function SaveAsFile(){
 }
 //aca se hace la ejecucion y analisis del codigo
 function Ejecutar(){
-
+    const texto = document.getElementById("texto1").value;
+    let result = parser.generate(texto);
+    console.log(result);
 }
 /* When the user clicks on the button,
 toggle between hiding and showing the dropdown content */

@@ -6,7 +6,7 @@ module.exports = {
       Type: "../symbol/types.js",
       Logical: "../expressions/logical.js",
       Relational: "../expressions/relational.js",
-      //Literal: "../expressions/literal.js",
+      Literal: "../expressions/literal.js",
       Declaracion: "../instructions/declaration.js",
       Declaracion: "../instructions/asignation.js",
     },

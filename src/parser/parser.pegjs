@@ -96,34 +96,70 @@ Relational_Exp
 
 }
 / Cadena op:(_("=="/"!=")_) Cadena{
+}
+/ Char op:(_("=="/"!=")_) Char{
 
 }
-/ Char op:(_("=="/"!=")_) Char
-/ Arithmetic_Exp
+/ exp:Arithmetic_Exp{
+
+}
 //-------------------------
 
 Arithmetic_Exp
-= Term tail:(_("+"/"-")_ Term)*
-/ Cadena tail:("+" Cadena)*
-/ Term
+= Term tail:(_("+"/"-")_ Term)*{
+    return tail.reduce(function(result, element){
+        const loc = location()?.start;
+        if (element[1] === "+") { return new Arithmetic(loc?.line,loc?.column, result, element[3], ARITHMETIC_OP.MAS); }
+        if (element[1] === "-") { return new Arithmetic(loc?.line,loc?.column, result, element[3], ARITHMETIC_OP.MENOS); }
+
+    });
+}
+/ Cadena tail:("+" Cadena)*{ 
+    return tail.reduce(function(result,element){
+        const loc = location()?.start;
+
+    });
+}
+/ Term{
+
+}
 
 Term
 = Factor tail:(_("*"/"/"/"%")_ Factor)*{
+    return tail.reduce(function(result, element) {
+        const loc = location()?.start;
+        if (element[1] === "*") { return new Arithmetic(loc?.line,loc?.column, result, element[3], ARITHMETIC_OP.MULTIPLICAR); }
+        if (element[1] === "/") { return new Arithmetic(loc?.line,loc?.column, result, element[3], ARITHMETIC_OP.DIVIDIR); }
+         if (element[1] === "%") { return new Arithmetic(loc?.line,loc?.column, result, element[3], ARITHMETIC_OP.MODULO); }
+      }, head);
+}
+/ Factor{
 
 }
-/ Factor
 
 Factor
 = "(" _ exp:Arithmetic_Exp ")"{
     return exp;
 }
 / "-" exp:Arithmetic_Exp{
+    const loc = location()?.start;
+    return new Arithmetic(loc?.line, loc?.column, new Literal(loc?.line, loc?.column, -1, Type.INT), expr, ARITHMETIC_OP.MENOS);
+}
+/ Terminal{
 
 }
-/ Terminal
 
 Terminal
-= value:(_(Integer/Float/Id)_)
+= valor:Integer { 
+    const loc = location()?.start;
+    return new Literal(loc?.line, loc?.column, valor, Type.INT);
+}
+/valor:Id{
+   return new Literal(loc?.line, loc?.column, valor, Type.IDENTIFICADOR);
+}
+/valor:Float{
+   return new Literal(loc?.line, loc?.column, valor, Type.FLOAT);
+}
 
 Integer "integer"
   = _ [0-9]+ { return parseInt(text(), 10); }
