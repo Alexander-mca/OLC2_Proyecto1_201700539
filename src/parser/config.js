@@ -9,5 +9,6 @@ module.exports = {
       Literal: "../expressions/literal.js",
       Declaracion: "../instructions/declaration.js",
       Declaracion: "../instructions/asignation.js",
+      TypeST : "../symbol/typeST.js"
     },
   };

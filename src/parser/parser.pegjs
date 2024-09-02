@@ -32,24 +32,75 @@ S
 
 Instrucciones 
 = ins:Instruccion+
+/ "{"(ins:Instruccion)+"}"{
+  
+}
 
 
  Instruccion
  = ins: Declaracion
- / ins: Asignation
+ / ins: Asignacion
  / ins:Sentencia_IF
+ / ins:Sentencia_Switch
+ / ins:Sentencia_While
+ / ins:Sentencia_For
+ / ins:Sentencia_Transfer
+ 
 
+//sentencia IF
  Sentencia_IF
- = "if(" log:LogicalExp "){" ins:Instrucciones "}" resto:Sentencia_Else {
+ = "if(" log:LogicalExp "){" (ins:Instruccion)* "}" resto:Sentencia_Else {
 
  }
 
  Sentencia_Else
  = "else" ins:Sentencia_IF
- / "else{" ins:Instrucciones "}" 
+ / "else{" (ins:Instruccion)* "}" 
  / epsilon
 
-Asignation
+//sentencia Switch
+Sentencia_Switch
+= "switch(" Expression "){"(Sentencia_Case)+ def:S_Default"}"{
+
+}
+
+Sentencia_Case
+= "case " exp:Expression ":" (ins:Instruccion)* (Sentencia_Transfer)?{
+
+}
+
+S_Default
+= "default:" (ins:Instruccion)*{
+
+}
+/ epsilon
+
+//Sentencia While
+Sentencia_While
+= "while(" exp:Expression "){" (Instruccion)* "}"{
+
+}
+
+// sentencia For
+Sentencia_For
+= "for(int" id:Id "=" exp:(_(Integer/Id)_) ";" exp1:Expression";" Id"++){"(Instruccion)*"}"{
+
+}
+/"for(" Tipo Id ":" Id "){" (Instruccion)* "}"{
+
+}
+
+Sentencia_Transfer
+= typeT:(_("break;"/"continue;"/"return;")_){
+  if(typeT == "break;") return TypeST.BREAK;
+  if(typeT == "continue;") return TypeST.CONTINUE;
+  if(typeT == "return;") return TypeST.RETURN;
+}
+/ "return" exp:Expression ";"{
+  
+}
+
+Asignacion
 = id:Id "=" exp:Expression ";" {
   const loc = location()?.start;
   return new Asignation(loc?.line, loc?.column, id, exp);
@@ -82,27 +133,49 @@ Expression
 = LogicalExp
 
 LogicalExp
-= exp:Relational_Exp op:(_("&&"/"||")_) exp1:Relational_Exp{
+= exp:Relational_Exp "||" exp1:Relational_Exp{
 
 }
   / "!" exp:Relational_Exp{
 
   }
-  / Relational_Exp
+  / LogicalAND
+
+LogicalAND
+= exp:Relational_Exp "&&" exp1:Relational_Exp{
+
+}
+/ Relational_Exp
 
 //-----------------------
 Relational_Exp
-= exp:Arithmetic_Exp op:(_("=="/"!=" / ">"/"<"/">="/"<=")_) exp1: Arithmetic_Exp{
-
+= exp:Arithmetic_Exp op:(_("=="/"!=")_) exp1: Arithmetic_Exp{
+      return op.reduce(function(result, element){
+        const loc = location()?.start;
+        if(element[1]=="=="){
+          return new Relational(loc?.line, loc?.column, exp, exp1, RELATIONAL_OP.IGUAL);
+        }
+        if(element[1]=="!="){
+          return new Relational(loc?.line, loc?.column, exp, exp1, RELATIONAL_OP.NO_IGUAL);
+        }
+      });
 }
 / Cadena op:(_("=="/"!=")_) Cadena{
 }
 / Char op:(_("=="/"!=")_) Char{
 
 }
-/ exp:Arithmetic_Exp{
+/ Relational_M
+
+//-------------------------
+Relational_M
+= exp:Arithmetic_Exp op:(_("<"/">"/">="/"<=")_) exp1: Arithmetic_Exp{
 
 }
+/Char op:(_("<"/">"/">="/"<=")_) Char{
+
+}
+/Arithmetic_Exp
 //-------------------------
 
 Arithmetic_Exp
@@ -117,7 +190,7 @@ Arithmetic_Exp
 / Cadena tail:("+" Cadena)*{ 
     return tail.reduce(function(result,element){
         const loc = location()?.start;
-
+        return new Arithmetic(loc?.line,loc?.column, result, element[3], ARITHMETIC_OP.MAS);
     });
 }
 / Term{
@@ -133,17 +206,22 @@ Term
          if (element[1] === "%") { return new Arithmetic(loc?.line,loc?.column, result, element[3], ARITHMETIC_OP.MODULO); }
       }, head);
 }
-/ Factor{
+/ FactorA{
 
 }
 
+FactorA
+= "-" exp:Arithmetic_Exp{
+    const loc = location()?.start;
+    return new Arithmetic(loc?.line, loc?.column, new Literal(loc?.line, loc?.column, -1, Type.INT), expr, ARITHMETIC_OP.MENOS);
+}
+/Factor
 Factor
 = "(" _ exp:Arithmetic_Exp ")"{
     return exp;
 }
-/ "-" exp:Arithmetic_Exp{
-    const loc = location()?.start;
-    return new Arithmetic(loc?.line, loc?.column, new Literal(loc?.line, loc?.column, -1, Type.INT), expr, ARITHMETIC_OP.MENOS);
+/ "[" _ exp:Arithmetic_Exp "]"{
+    return exp;
 }
 / Terminal{
 

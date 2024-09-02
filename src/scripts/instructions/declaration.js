@@ -1,4 +1,5 @@
 import Instruction from "../abstract/instruction.js";
+import tree from "../symbol/entorno.js";
 
 class Declaration extends Instruction {
   constructor(line, column, nombre, tipo, expresion) {
