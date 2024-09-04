@@ -27,7 +27,7 @@
 //Gramatica dedicada al analisis del lenguaje Oakland
 
 
-S 
+Start 
 = Instrucciones
 
 Instrucciones 
@@ -92,9 +92,9 @@ Sentencia_For
 
 Sentencia_Transfer
 = typeT:(_("break;"/"continue;"/"return;")_){
-  if(typeT == "break;") return TypeST.BREAK;
-  if(typeT == "continue;") return TypeST.CONTINUE;
-  if(typeT == "return;") return TypeST.RETURN;
+  if(typeT === "break;") return TypeST.BREAK;
+  if(typeT === "continue;") return TypeST.CONTINUE;
+  if(typeT === "return;") return TypeST.RETURN;
 }
 / "return" exp:Expression ";"{
   
@@ -103,16 +103,16 @@ Sentencia_Transfer
 Asignacion
 = id:Id "=" exp:Expression ";" {
   const loc = location()?.start;
-  return new Asignation(loc?.line, loc?.column, id, exp);
+  return new Asignation(loc?.line, loc?.column, new Literal(loc?.line, loc?.column, id, Type.IDENTIFIER), exp);
 }
 / id:Id op:(_("-"/"+")_)"=" exp:Expression";"{
   //se devuelve un valor literal que es el resultado de la operacion
   let valor = op.reduce(function(result, element){
       const loc = location()?.start;
-      if(element[1]=="+"){
+      if(element[1]==="+"){
         return new Arithmetic(loc?.line, loc?.column, new Literal(loc?.line, loc?.column, id, Type.IDENTIFIER), exp, ARITHMETIC_OP.MAS)
       }
-      if(element[1]=="-"){
+      if(element[1]==="-"){
         return new Arithmetic(loc?.line, loc?.column, new Literal(loc?.line, loc?.column, id, Type.IDENTIFIER), exp, ARITHMETIC_OP.MENOS)
       }
   });
@@ -122,15 +122,15 @@ Asignacion
 Declaracion
 = type:Tipo id:Id "=" exp:Expression ";" {
       const loc = location()?.start;
-      return new Declaration(loc?.line, loc?.column, id, type, exp);
+      return new Declaration(loc?.line, loc?.column, new Literal(loc?.line, loc?.column, id, Type.IDENTIFIER), type, exp);
   }
  /type:Tipo id:Id ";" {
   const loc = location()?.start;
-  return new Declaration(loc?.line, loc?.column, id, type, undefined);
+  return new Declaration(loc?.line, loc?.column, new Literal(loc?.line, loc?.column, id, Type.IDENTIFIER), type, undefined);
  }
  / "var" id:Id "=" exp:Expression ";" {
    const loc = location()?.start;
-   return new Declaration(loc?.line, loc?.column, id, "var", exp);
+   return new Declaration(loc?.line, loc?.column, new Literal(loc?.line, loc?.column, id, Type.IDENTIFIER), "var", exp);
  }
 
  Tipo
@@ -148,7 +148,7 @@ Expression
 }
 
 LogicalExp
-= exp:Relational_Exp "||" exp1:Relational_Exp{
+= head:Relational_Exp tail:("||" exp1:Relational_Exp)+{
 
 }
   / "!" exp:Relational_Exp{
@@ -157,7 +157,7 @@ LogicalExp
   / LogicalAND
 
 LogicalAND
-= exp:Relational_Exp "&&" exp1:Relational_Exp{
+= head:Relational_Exp tail:("&&" exp1:Relational_Exp)+{
 
 }
 / rel:Relational_Exp{
@@ -169,10 +169,9 @@ Relational_Exp
 = exp:Arithmetic_Exp op:(_("=="/"!=")_) exp1: Arithmetic_Exp{
       return op.reduce(function(result, element){
         const loc = location()?.start;
-        if(element[1]=="=="){
+        if(element[1]==="=="){
           return new Relational(loc?.line, loc?.column, exp, exp1, RELATIONAL_OP.IGUAL);
-        }
-        if(element[1]=="!="){
+        }else if(element[1]==="!="){
           return new Relational(loc?.line, loc?.column, exp, exp1, RELATIONAL_OP.NO_IGUAL);
         }
       });
@@ -184,10 +183,18 @@ Relational_Exp
 //-------------------------
 Relational_M
 = exp:Arithmetic_Exp op:(_("<"/">"/">="/"<=")_) exp1: Arithmetic_Exp{
-
-}
-/Char op:(_("<"/">"/">="/"<=")_) Char{
-
+    return op.reduce(function(result, element){
+      const loc = location()?.start;
+      if(element[1]==="<"){
+        return new Relational(loc?.line, loc?.column, exp, exp1, RELATIONAL_OP.MENOR);
+      }else if(element[1]===">"){
+        return new Relational(loc?.line, loc?.column, exp, exp1, RELATIONAL_OP.MAYOR);
+      }else if(element[1]===">="){
+        return new Relational(loc?.line, loc?.column, exp, exp1, RELATIONAL_OP.MAYOR_IGUAL);
+      }else if(element[1]==="<="){
+        return new Relational(loc?.line, loc?.column, exp, exp1, RELATIONAL_OP.MENOR_IGUAL);
+      }
+    });
 }
 /exp:Arithmetic_Exp{
   return exp;
@@ -195,20 +202,20 @@ Relational_M
 //-------------------------
 
 Arithmetic_Exp
-= Term tail:(_("+"/"-")_ Term)*{
+= head:Term tail:(_("+"/"-")_ Term)+{
     return tail.reduce(function(result, element){
         const loc = location()?.start;
         if (element[1] === "+") { return new Arithmetic(loc?.line,loc?.column, result, element[3], ARITHMETIC_OP.MAS); }
         if (element[1] === "-") { return new Arithmetic(loc?.line,loc?.column, result, element[3], ARITHMETIC_OP.MENOS); }
 
-    });
+    }, head);
 }
 / t:Term{
     return t;
 }
 
 Term
-= Factor tail:(_("*"/"/"/"%")_ Factor)*{
+= head:Factor tail:(_("*"/"/"/"%")_ Factor)+{
     return tail.reduce(function(result, element) {
         const loc = location()?.start;
         if (element[1] === "*") { return new Arithmetic(loc?.line,loc?.column, result, element[3], ARITHMETIC_OP.MULTIPLICAR); }
@@ -223,7 +230,7 @@ Term
 FactorA
 = "-" exp:Arithmetic_Exp{
     const loc = location()?.start;
-    return new Arithmetic(loc?.line, loc?.column, new Literal(loc?.line, loc?.column, -1, Type.INT), expr, ARITHMETIC_OP.MENOS);
+    return new Arithmetic(loc?.line, loc?.column, new Literal(loc?.line, loc?.column, -1, Type.INT), expr, ARITHMETIC_OP.MULTIPLICAR);
 }
 /Factor
 Factor

@@ -14,15 +14,15 @@ class Arithmetic extends Expression {
   
     #suma(a,b) {
       let result = new Literal(this.line, this.column, value, type);
-      if(a.type==Type.INT && b.type==Type.INT){
+      if(a.type===Type.INT && b.type===Type.INT){
         result.value = a.value + b.value;
         result.type = Type.INT;
-      }else if((a.type==Type.INT && a.type==Type.FLOAT)|| 
-      (a.type==Type.FLOAT && b.type==Type.INT) ||
-      (a.type==Type.FLOAT && b.type==Type.FLOAT)){
+      }else if((a.type===Type.INT && a.type===Type.FLOAT)|| 
+      (a.type===Type.FLOAT && b.type===Type.INT) ||
+      (a.type===Type.FLOAT && b.type===Type.FLOAT)){
         result.value = a.value + b.value;
           result.type = Type.FLOAT;
-      }else if(a.type==Type.STRING && b.type==Type.STRING){
+      }else if(a.type===Type.STRING && b.type===Type.STRING){
         result.value = a.value + b.value;
         result.type = Type.STRING;
       }else{
@@ -36,12 +36,12 @@ class Arithmetic extends Expression {
 
     #resta(a,b){
       let result = new Literal(this.line, this.column, value, type);
-      if((a.type==Type.INT && a.type==Type.FLOAT)|| 
-        (a.type==Type.FLOAT && b.type==Type.INT) ||
-        (a.type==Type.FLOAT && b.type==Type.FLOAT)){
+      if((a.type===Type.INT && a.type===Type.FLOAT)|| 
+        (a.type===Type.FLOAT && b.type===Type.INT) ||
+        (a.type===Type.FLOAT && b.type===Type.FLOAT)){
           result.value = a.value - b.value;
           result.type = Type.FLOAT;
-      }else if(a.type==Type.INT && b.type==Type.INT){
+      }else if(a.type===Type.INT && b.type===Type.INT){
           result.value = a.value - b.value;
           result.type = Type.INT;
       }else{
@@ -54,17 +54,17 @@ class Arithmetic extends Expression {
     }
     #division(a,b){
       let result = new Literal(this.line, this.column, value, type);
-      if((a.type==Type.INT && a.type==Type.FLOAT)|| 
-        (a.type==Type.FLOAT && b.type==Type.INT) ||
-        (a.type==Type.FLOAT && b.type==Type.FLOAT)){
-          if(b.value==0){
+      if((a.type===Type.INT && a.type===Type.FLOAT)|| 
+        (a.type===Type.FLOAT && b.type===Type.INT) ||
+        (a.type===Type.FLOAT && b.type===Type.FLOAT)){
+          if(b.value===0){
             //se marca error
             result.value = null;
             console.log("Error en la operacion, no se puede dividir por 0");
           }
           result.value = a.value / b.value;
           result.type = Type.FLOAT;
-      }else if(a.type==Type.INT && b.type==Type.INT){
+      }else if(a.type===Type.INT && b.type===Type.INT){
           result.value = a.value / b.value;
           result.type = Type.INT;
       }else{
@@ -77,12 +77,12 @@ class Arithmetic extends Expression {
     }
     #multiplicacion(a,b){
       let result = new Literal(this.line, this.column, value, type);
-      if((a.type==Type.INT && a.type==Type.FLOAT)|| 
-        (a.type==Type.FLOAT && b.type==Type.INT) ||
-        (a.type==Type.FLOAT && b.type==Type.FLOAT)){
+      if((a.type===Type.INT && a.type===Type.FLOAT)|| 
+        (a.type===Type.FLOAT && b.type===Type.INT) ||
+        (a.type===Type.FLOAT && b.type===Type.FLOAT)){
           result.value = a.value * b.value;
           result.type = Type.FLOAT;
-      }else if(a.type==Type.INT && b.type==Type.INT){
+      }else if(a.type===Type.INT && b.type===Type.INT){
           result.value = a.value * b.value;
           result.type = Type.INT;
       }else{
@@ -95,8 +95,8 @@ class Arithmetic extends Expression {
     }
     #modulo(a,b){
         let result = new Literal(this.line, this.column, value, type);
-        if(a.type==Type.INT && b.type==Type.INT){
-          if(b.value==0){
+        if(a.type===Type.INT && b.type===Type.INT){
+          if(b.value===0){
             //se nmarca error
             result.value = null;
             console.log("Error en la operacion, no se puede dividir por 0");
@@ -114,23 +114,23 @@ class Arithmetic extends Expression {
       const resultado_derecho = this.right.execute(env);
       let result = new Literal(this.line, this.column, value, type);
 
-      if(this.op==ARITHMETIC_OP.MAS){
+      if(this.op===ARITHMETIC_OP.MAS){
           result = this.#suma(resultado_izdo, resultado_derecho);
           return result;
       }
-      if(this.op==ARITHMETIC_OP.MENOS){
+      if(this.op===ARITHMETIC_OP.MENOS){
           result = this.#resta(resultado_izdo,resultado_derecho);
           return result;
       }
-      if(this.op==ARITHMETIC_OP.DIVIDIR){
+      if(this.op===ARITHMETIC_OP.DIVIDIR){
         result = this.#division(resultado_izdo, resultado_derecho);
         return result;
         
       }
-      if(this.op==ARITHMETIC_OP.MULTIPLICAR){
+      if(this.op===ARITHMETIC_OP.MULTIPLICAR){
          return result = this.#multiplicacion(resultado_izdo, resultado_derecho);
       }
-      if(this.op==ARITHMETIC_OP.MODULO){
+      if(this.op===ARITHMETIC_OP.MODULO){
         return result = this.#modulo(resultado_izdo, resultado_derecho);
       }
       console.log("Expresion Aritmetica");

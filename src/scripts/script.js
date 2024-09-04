@@ -1,6 +1,7 @@
 const mobileNav = document.querySelector(".hamburger");
 const navbar = document.querySelector(".menubar");
-const parser = require('../parser/parser');
+import { parse } from '../parser/parser';
+import Environment from './symbol/env';
 let archivos = []
 
 
@@ -55,7 +56,11 @@ function SaveAsFile(){
 //aca se hace la ejecucion y analisis del codigo
 function Ejecutar(){
     const texto = document.getElementById("texto1").value;
-    let result = parser.generate(texto);
+    let result = parse(texto);
+    let global = new Environment(null);
+    result.forEach((element)=>{
+      element.execute(global);
+    });
     console.log(result);
 }
 /* When the user clicks on the button,
