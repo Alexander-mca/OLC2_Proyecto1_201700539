@@ -105,7 +105,20 @@ Asignacion
   const loc = location()?.start;
   return new Asignation(loc?.line, loc?.column, id, exp);
 }
-
+/ id:Id op:(_("-"/"+")_)"=" exp:Expression";"{
+  //se devuelve un valor literal que es el resultado de la operacion
+  let valor = op.reduce(function(result, element){
+      const loc = location()?.start;
+      if(element[1]=="+"){
+        return new Arithmetic(loc?.line, loc?.column, new Literal(loc?.line, loc?.column, id, Type.IDENTIFIER), exp, ARITHMETIC_OP.MAS)
+      }
+      if(element[1]=="-"){
+        return new Arithmetic(loc?.line, loc?.column, new Literal(loc?.line, loc?.column, id, Type.IDENTIFIER), exp, ARITHMETIC_OP.MENOS)
+      }
+  });
+  //se asigna ese valor resultado a la variable en cuestion
+  return new Asignacion(loc?.line, loc?.column, id, valor);
+}
 Declaracion
 = type:Tipo id:Id "=" exp:Expression ";" {
       const loc = location()?.start;
@@ -130,7 +143,9 @@ Declaracion
  }
 
 Expression
-= LogicalExp
+= log:LogicalExp{
+  return log;
+}
 
 LogicalExp
 = exp:Relational_Exp "||" exp1:Relational_Exp{
@@ -145,7 +160,9 @@ LogicalAND
 = exp:Relational_Exp "&&" exp1:Relational_Exp{
 
 }
-/ Relational_Exp
+/ rel:Relational_Exp{
+  return rel;
+}
 
 //-----------------------
 Relational_Exp
@@ -160,12 +177,9 @@ Relational_Exp
         }
       });
 }
-/ Cadena op:(_("=="/"!=")_) Cadena{
+/ rel:Relational_M{
+  return rel;
 }
-/ Char op:(_("=="/"!=")_) Char{
-
-}
-/ Relational_M
 
 //-------------------------
 Relational_M
@@ -175,7 +189,9 @@ Relational_M
 /Char op:(_("<"/">"/">="/"<=")_) Char{
 
 }
-/Arithmetic_Exp
+/exp:Arithmetic_Exp{
+  return exp;
+}
 //-------------------------
 
 Arithmetic_Exp
@@ -187,14 +203,8 @@ Arithmetic_Exp
 
     });
 }
-/ Cadena tail:("+" Cadena)*{ 
-    return tail.reduce(function(result,element){
-        const loc = location()?.start;
-        return new Arithmetic(loc?.line,loc?.column, result, element[3], ARITHMETIC_OP.MAS);
-    });
-}
-/ Term{
-
+/ t:Term{
+    return t;
 }
 
 Term
@@ -206,8 +216,8 @@ Term
          if (element[1] === "%") { return new Arithmetic(loc?.line,loc?.column, result, element[3], ARITHMETIC_OP.MODULO); }
       }, head);
 }
-/ FactorA{
-
+/ fac:FactorA{
+    return fac;
 }
 
 FactorA
@@ -223,8 +233,8 @@ Factor
 / "[" _ exp:Arithmetic_Exp "]"{
     return exp;
 }
-/ Terminal{
-
+/ term:Terminal{
+    return term;
 }
 
 Terminal
@@ -233,10 +243,24 @@ Terminal
     return new Literal(loc?.line, loc?.column, valor, Type.INT);
 }
 /valor:Id{
-   return new Literal(loc?.line, loc?.column, valor, Type.IDENTIFICADOR);
+    const loc = location()?.start;
+   return new Literal(loc?.line, loc?.column, valor, Type.IDENTIFIER);
 }
 /valor:Float{
+  const loc = location()?.start;
    return new Literal(loc?.line, loc?.column, valor, Type.FLOAT);
+}
+/valor:STRING {
+    const loc = location()?.start;
+   return new Literal(loc?.line, loc?.column, valor, Type.STRING);
+}
+/valor:Char{
+    const loc = location()?.start;
+   return new Literal(loc?.line, loc?.column, valor, Type.CHAR);
+}
+/valor:BOOLEAN{
+  const loc = location()?.start;
+   return new Literal(loc?.line, loc?.column, valor, Type.BOOLEAN);
 }
 
 Integer "integer"
@@ -256,11 +280,19 @@ Comment_Line "Comment_Line"
 Comment_Multi
 = "/*" (!"*/" .)* "*/"
 
-Cadena "Cadena"
-= _ "\"" .* "\""
-
+STRING "string"
+= "\"" chars:[^\"]* "\"" _ 
+  {
+    return text();
+  }
+BOOLEAN
+= (_("true"/"false")_){
+  return text();
+}
 Char "Char"
-= _ "\'"."\'"
+= _ "\'"."\'"{
+  return text();
+}
 
 Float "Float"
-= _ [0-9]+"."[0-9]+
+= Integer"."Integer { return parseFloat(text());}

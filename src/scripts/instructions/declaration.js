@@ -18,6 +18,7 @@ class Declaration extends Instruction {
     // { name: ..., tipo:...}
     if (!result) {
       // reportan el error
+      console.log("Error en la declaracion de la variable");
     }
 
     env.guardarVariable(result);
