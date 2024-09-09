@@ -42,13 +42,15 @@ Instrucciones
 
 
  Instruccion
- = ins: Declaracion
- / ins: Asignacion
- / ins:Sentencia_IF
- / ins:Sentencia_Switch
- / ins:Sentencia_While
- / ins:Sentencia_For
- / ins:Sentencia_Transfer
+ = ins:(_(Declaracion
+ /  Asignacion
+ / Sentencia_IF
+ / Sentencia_Switch
+ / Sentencia_While
+ / Sentencia_For
+ / Sentencia_Transfer)_){
+  return ins;
+ }
  
 
 //sentencia IF
@@ -89,16 +91,21 @@ S_Default
 //Sentencia While
 Sentencia_While
 = "while(" exp:Expression "){" ins:Instruccion* "}"{
-
+    let loc = location()?.start;
+    return new Sentencia_While(loc?.line, loc?.column, exp, ins);
 }
 
 // sentencia For
 Sentencia_For
-= "for(int" id:Id "=" exp:(_(Integer/Id)_) ";" exp1:Expression";" Id"++){"ins:Instruccion*"}"{
-
+= "for(int" id:Id "=" exp:Expression ";" exp1:Expression";" asig:Asignacion"){"ins:Instruccion*"}"{
+    let loc = location()?.start;
+    const decl = new Declaration(loc?.line, loc?.column, new Literal(loc?.line, loc?.column, id, Type.IDENTIFIER), Type.INT, exp);
+    return new Sentencia_For(loc?.line, loc?.column, decl, exp1, asig, ins);
 }
-/"for(" Tipo Id ":" Id "){" ins:Instruccion* "}"{
-
+/"for(" type:Tipo id:Id ":" id2:Id "){" ins:Instruccion* "}"{
+      let loc = location()?.start;
+      const decl = new Declaration(loc?.line, loc?.column, new Literal(loc?.line, loc?.column, id, Type.IDENTIFIER), type, undefined);
+      return new Sentencia_Foreach(loc?.line, loc?.column, decl, id2, ins);
 }
 
 Sentencia_Transfer

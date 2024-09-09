@@ -1,6 +1,6 @@
 import Instruction from "../abstract/instruction";
 import Environment from "../symbol/env.js";
-import Enviroment from "../symbol/env.js";
+import {TRANSFER_S} from "../symbol/data.js";
 
 class Sentencia_While extends Instruction{
     constructor(line, column, exp, ins){
@@ -16,10 +16,17 @@ class Sentencia_While extends Instruction{
         if(condicion!=null  || condicion!=undefined){
            if(condicion.value===true){
                 //se evalua lo que viene dentro del while
-                this.ins.forEach(element => {
-                    let new_env = new Environment(env);
-                    element.execute(new_env);    
-                });
+                let new_env = new Environment(env);
+                for (let i = 0; i< this.ins.length; i++) {
+                    const element = this.ins[i];
+                    if(element===TRANSFER_S.BREAK){
+                        return;
+                    }else if(element===TRANSFER_S.CONTINUE){
+                        break;
+                    }
+                    //verificar si se debe agregar return                    
+                    element.execute(new_env);  
+                }
                 //se repite la funcion hasta que venga un valor que de falso y detenga la funcion
                 this.execute(env);
            }else if(condicion===false){
