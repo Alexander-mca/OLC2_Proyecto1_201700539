@@ -21,9 +21,13 @@
     OR: 1,
     NOT: 2
   };
+
+  const TRANSFER_S = {
+    BREAK: 0,
+    CONTINUE: 1,
+    RETURN: 2
+  };
 }
-
-
 //Gramatica dedicada al analisis del lenguaje Oakland
 
 
@@ -49,55 +53,62 @@ Instrucciones
 
 //sentencia IF
  Sentencia_IF
- = "if(" log:LogicalExp "){" (ins:Instruccion)* "}" resto:Sentencia_Else {
-
+ = "if(" log:LogicalExp "){" ins:Instruccion* "}" resto:Sentencia_Else {
+      let loc = location()?.start;
+      return new Sentencia_If(loc?.line, loc?.column, log, ins, resto);
  }
 
  Sentencia_Else
- = "else" ins:Sentencia_IF
- / "else{" (ins:Instruccion)* "}" 
+ = "else" ins:Sentencia_IF{
+    return ins;
+ }
+ / "else{" ins:Instruccion* "}" {
+      return ins;
+ }
  / epsilon
 
 //sentencia Switch
 Sentencia_Switch
-= "switch(" Expression "){"(Sentencia_Case)+ def:S_Default"}"{
-
+= "switch(" exp:Expression "){" ins:Sentencia_Case+ def:S_Default?"}"{
+    const loc = location()?.start;
+    return new Sentencia_Switch(loc?.line, loc?.column, ins, def);
 }
 
 Sentencia_Case
-= "case " exp:Expression ":" (ins:Instruccion)* (Sentencia_Transfer)?{
-
+= "case " exp:Expression ":" ins:Instruccion* trans:Sentencia_Transfer?{
+    const loc = location()?.start;
+    return new Sentencia_Case(loc?.line, loc?.column, exp, ins, transfer);
 }
 
 S_Default
-= "default:" (ins:Instruccion)*{
-
+= "default:" ins:Instruccion*{
+    return ins;
 }
 / epsilon
 
 //Sentencia While
 Sentencia_While
-= "while(" exp:Expression "){" (Instruccion)* "}"{
+= "while(" exp:Expression "){" ins:Instruccion* "}"{
 
 }
 
 // sentencia For
 Sentencia_For
-= "for(int" id:Id "=" exp:(_(Integer/Id)_) ";" exp1:Expression";" Id"++){"(Instruccion)*"}"{
+= "for(int" id:Id "=" exp:(_(Integer/Id)_) ";" exp1:Expression";" Id"++){"ins:Instruccion*"}"{
 
 }
-/"for(" Tipo Id ":" Id "){" (Instruccion)* "}"{
+/"for(" Tipo Id ":" Id "){" ins:Instruccion* "}"{
 
 }
 
 Sentencia_Transfer
 = typeT:(_("break;"/"continue;"/"return;")_){
-  if(typeT === "break;") return TypeST.BREAK;
-  if(typeT === "continue;") return TypeST.CONTINUE;
-  if(typeT === "return;") return TypeST.RETURN;
+  if(typeT === "break;") return TRANSFER_S.BREAK;
+  if(typeT === "continue;") return TRANSFER_S.CONTINUE;
+  if(typeT === "return;") return TRANSFER_S.RETURN;
 }
 / "return" exp:Expression ";"{
-  
+    return exp;
 }
 
 Asignacion
@@ -149,16 +160,25 @@ Expression
 
 LogicalExp
 = head:Relational_Exp tail:("||" exp1:Relational_Exp)+{
-
+      return tail.reduce(function(result, element){
+        const loc= location()?.start;
+        return new Logical(loc?.line, loc?.column, result, element[3], LOGICAL_OP.OR);
+      }, head);
 }
   / "!" exp:Relational_Exp{
-
+      const loc = location()?.start;
+      return new Logical(loc?.line, loc?.column, exp, exp, LOGICAL_OP.NOT);
   }
-  / LogicalAND
+  / log:LogicalAND{
+    return log;
+  }
 
 LogicalAND
 = head:Relational_Exp tail:("&&" exp1:Relational_Exp)+{
-
+      return tail.reduce(function(result, element){
+        const loc= location()?.start;
+        return new Logical(loc?.line, loc?.column, result, element[3], LOGICAL_OP.AND);
+      }, head);
 }
 / rel:Relational_Exp{
   return rel;

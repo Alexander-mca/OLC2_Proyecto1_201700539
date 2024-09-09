@@ -20,5 +20,9 @@ const ARITHMETIC_OP = {
     OR: 1,
     NOT: 2
   };
-
-  export  default {ARITHMETIC_OP, RELATIONAL_OP, LOGICAL_OP};
+  const TRANSFER_S = {
+    BREAK: 0,
+    CONTINUE: 1,
+    RETURN: 2
+  };
+  export  default {ARITHMETIC_OP, RELATIONAL_OP, LOGICAL_OP, TRANSFER_S};

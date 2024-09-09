@@ -37,6 +37,46 @@ class Relational extends Expression {
           return null;
        }
     }
+    #mayorque(a,b){
+      let correcto;
+      if(((a.type===Type.INT || a.type===Type.FLOAT) &&
+          (b.type===Type.INT || b.type===Type.FLOAT))){
+            //se procesa para numeros enteros o flotantes
+            if(a.value>b.value){
+              return correcto=true;
+            }
+      }else if(a.type===Type.CHAR && b.type===Type.CHAR){
+            if(a.value>b.value){
+              return correcto=true;
+            }
+      }else{
+        //error de tipos
+        console.log("Error de tipos, los valores no pueden ser comparados")
+        return correcto=null;
+      }
+      correcto = false;
+      return correcto;
+    }
+    #menorque(a,b){
+      let correcto;
+      if(((a.type===Type.INT || a.type===Type.FLOAT) &&
+          (b.type===Type.INT || b.type===Type.FLOAT))){
+            //se procesa para numeros enteros o flotantes
+            if(a.value<b.value){
+              return correcto=true;
+            }
+      }else if(a.type===Type.CHAR && b.type===Type.CHAR){
+            if(a.value<b.value){
+              return correcto=true;
+            }
+      }else{
+        //error de tipos
+        console.log("Error de tipos, los valores no pueden ser comparados")
+        return correcto=null;
+      }
+      correcto = false;
+      return correcto;
+    }
     execute(env) {
       const resultado_izdo = this.left.execute(env);
       const resultado_derecho = this.right.execute(env);
@@ -44,13 +84,32 @@ class Relational extends Expression {
       let correcto;
       switch (op) {
         case RELATIONAL_OP.MAYOR:
-          
+          correcto = this.#mayorque(resultado_izdo, resultado_derecho);
+          if(correcto!=null){
+            result.value = correcto;
+            result.type = Type.BOOLEAN;
+          }
           break;
         case RELATIONAL_OP.MENOR:
+          correcto = this.#menorque(resultado_izdo, resultado_derecho);
+          if(correcto!=null){
+            result.value = correcto;
+            result.type = Type.BOOLEAN;
+          }
           break;
         case RELATIONAL_OP.MAYOR_IGUAL:
+          correcto = this.#menorque(resultado_izdo, resultado_derecho);
+          if(correcto!=null){
+            result.value = !correcto;
+            result.type = Type.BOOLEAN;
+          }
           break;
         case RELATIONAL_OP.MENOR_IGUAL:
+          correcto = this.#mayorque(resultado_izdo, resultado_derecho);
+          if(correcto!=null){
+            result.value = !correcto;
+            result.type = Type.BOOLEAN;
+          }
           break;
         case RELATIONAL_OP.IGUAL:
           correcto = this.#igual(resultado_izdo, resultado_derecho);

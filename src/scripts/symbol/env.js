@@ -8,7 +8,7 @@ class Environment {
   }
 
   // podriamos quitar symbol 
-  add_symbol(symbol) {
+  add(symbol) {
     if(this.#find_symbol(symbol.id) === null) {
       this.#tabla_simbolos.set(symbol.id, symbol);
     }
@@ -24,7 +24,6 @@ class Environment {
 
     return null;
   }
-
   buscar_variable(id) {
     return this.#find_variable(id, this);
   }
