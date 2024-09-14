@@ -35,8 +35,8 @@ Start
 = Instrucciones
 
 Instrucciones 
-= ins:Instruccion+
-/ "{"(ins:Instruccion)+"}"{
+= ins:Instruccion*
+/ "{"ins:Instruccion*"}"{
   
 }
 
@@ -99,12 +99,12 @@ Sentencia_While
 Sentencia_For
 = "for(int" id:Id "=" exp:Expression ";" exp1:Expression";" asig:Asignacion"){"ins:Instruccion*"}"{
     let loc = location()?.start;
-    const decl = new Declaration(loc?.line, loc?.column, new Literal(loc?.line, loc?.column, id, Type.IDENTIFIER), Type.INT, exp);
+    const decl = new Declaration(loc?.line, loc?.column, id, Type.INT, exp);
     return new Sentencia_For(loc?.line, loc?.column, decl, exp1, asig, ins);
 }
 /"for(" type:Tipo id:Id ":" id2:Id "){" ins:Instruccion* "}"{
       let loc = location()?.start;
-      const decl = new Declaration(loc?.line, loc?.column, new Literal(loc?.line, loc?.column, id, Type.IDENTIFIER), type, undefined);
+      const decl = new Declaration(loc?.line, loc?.column, id, type, undefined);
       return new Sentencia_Foreach(loc?.line, loc?.column, decl, id2, ins);
 }
 
@@ -121,17 +121,17 @@ Sentencia_Transfer
 Asignacion
 = id:Id "=" exp:Expression ";" {
   const loc = location()?.start;
-  return new Asignation(loc?.line, loc?.column, new Literal(loc?.line, loc?.column, id, Type.IDENTIFIER), exp);
+  return new Asignation(loc?.line, loc?.column, id, exp);
 }
 / id:Id op:(_("-"/"+")_)"=" exp:Expression";"{
   //se devuelve un valor literal que es el resultado de la operacion
   let valor = op.reduce(function(result, element){
       const loc = location()?.start;
       if(element[1]==="+"){
-        return new Arithmetic(loc?.line, loc?.column, new Literal(loc?.line, loc?.column, id, Type.IDENTIFIER), exp, ARITHMETIC_OP.MAS)
+        return new Arithmetic(loc?.line, loc?.column, id, exp, ARITHMETIC_OP.MAS)
       }
       if(element[1]==="-"){
-        return new Arithmetic(loc?.line, loc?.column, new Literal(loc?.line, loc?.column, id, Type.IDENTIFIER), exp, ARITHMETIC_OP.MENOS)
+        return new Arithmetic(loc?.line, loc?.column, id, exp, ARITHMETIC_OP.MENOS)
       }
   });
   //se asigna ese valor resultado a la variable en cuestion
@@ -140,16 +140,37 @@ Asignacion
 Declaracion
 = type:Tipo id:Id "=" exp:Expression ";" {
       const loc = location()?.start;
-      return new Declaration(loc?.line, loc?.column, new Literal(loc?.line, loc?.column, id, Type.IDENTIFIER), type, exp);
+      return new Declaration(loc?.line, loc?.column, id, type, exp);
   }
  /type:Tipo id:Id ";" {
   const loc = location()?.start;
-  return new Declaration(loc?.line, loc?.column, new Literal(loc?.line, loc?.column, id, Type.IDENTIFIER), type, undefined);
+  return new Declaration(loc?.line, loc?.column, id, type, undefined);
  }
  / "var" id:Id "=" exp:Expression ";" {
    const loc = location()?.start;
-   return new Declaration(loc?.line, loc?.column, new Literal(loc?.line, loc?.column, id, Type.IDENTIFIER), "var", exp);
+   return new Declaration(loc?.line, loc?.column, id, "var", exp);
  }
+ /type:Tipo "[]" id:Id "={" term1:Terminal term:(","Terminal)*"};"{
+    const loc = location()?.start;
+    const valores = term.reduce(function(result, element){
+        let temp = []
+        temp.push(term1);
+        term.forEach(item => {
+            temp.push(item);
+        });
+        return temp;
+    });
+    return new Arreglo(loc?.line, loc?.column, type, id, valores);
+ }
+ /type:Tipo "[]" id:Id "=""new" type2:Tipo "["exp:Expression"];"{
+    const loc = location()?.start;
+    return new Arreglo(loc?.line, loc?.column, type, id, type2, exp);
+ }
+/type:Tipo "[]" id:Id "=" id2:Id";"{
+      const loc = location()?.start;
+      return new Arreglo(loc?.line, loc?.column, type, id, id2);
+}
+
 
  Tipo
  = type:(_("int"/"float"/"string"/"char"/"bool")_){
@@ -169,7 +190,7 @@ LogicalExp
 = head:Relational_Exp tail:("||" exp1:Relational_Exp)+{
       return tail.reduce(function(result, element){
         const loc= location()?.start;
-        return new Logical(loc?.line, loc?.column, result, element[3], LOGICAL_OP.OR);
+        return new Logical(loc?.line, loc?.column, result, element[2], LOGICAL_OP.OR);
       }, head);
 }
   / "!" exp:Relational_Exp{
@@ -184,7 +205,7 @@ LogicalAND
 = head:Relational_Exp tail:("&&" exp1:Relational_Exp)+{
       return tail.reduce(function(result, element){
         const loc= location()?.start;
-        return new Logical(loc?.line, loc?.column, result, element[3], LOGICAL_OP.AND);
+        return new Logical(loc?.line, loc?.column, result, element[2], LOGICAL_OP.AND);
       }, head);
 }
 / rel:Relational_Exp{

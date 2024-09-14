@@ -1,25 +1,18 @@
 const mobileNav = document.querySelector(".hamburger");
 const navbar = document.querySelector(".menubar");
-import { parse } from '../parser/parser';
-import Environment from './symbol/env';
+import parse from "./parser/parser.js";
+import Environment from './scripts/symbol/env.js';
 let archivos = []
 
 
 
 
+function TablaSimbolos(){
 
-
-const textarea = document.getElementById('texto1');
-const lineNumbersEle = document.getElementById('line-numbers');
-
-const displayLineNumbers = () => {
-    const lines = textarea.value.split('\n');
-    lineNumbersEle.innerHTML = Array.from({
-        length: lines.length,
-    }, (_, i) => `<div>${i + 1}</div>`).join('');
 }
 
-displayLineNumbers();
+
+
 
 
 const toggleNav = () => {
@@ -52,6 +45,15 @@ function SaveFile(){
 
 function SaveAsFile(){
 
+}
+
+function numeros(){
+  const textarea = document.getElementById('texto1');
+  const lineNumbersEle = document.getElementById('line-numbers');
+  const lines = textarea.value.split('\n');
+  lineNumbersEle.innerHTML = Array.from({
+      length: lines.length,
+  }, (_, i) => `<div>${i + 1}</div>`).join('');
 }
 //aca se hace la ejecucion y analisis del codigo
 function Ejecutar(){

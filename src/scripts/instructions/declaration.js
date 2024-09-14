@@ -1,6 +1,7 @@
 import Instruction from "../abstract/instruction.js";
-import Symbol from "../symbol/variable.js";
-import Type from "../symbol/types.js"
+import Symbol from "../symbol/symbol.js";
+import {SYMBOL_TYPE} from "../symbol/data.js";
+import Type from "../symbol/types.js";
 import Literal from "../expressions/literal.js";
 
 class Declaration extends Instruction {
@@ -50,7 +51,7 @@ class Declaration extends Instruction {
         result.value = null;
     }
 
-    let variable  = new Symbol(this.line, this.column, this.id.value, result.value, this.tipo);
+    let variable  = new Symbol(this.line, this.column, this.id.value, result.value, this.tipo, SYMBOL_TYPE.VARIABLE);
     //se busca si la variable ya fue declarada 
     let temp = env.buscar_variable(variable);
     if(temp!=null){
