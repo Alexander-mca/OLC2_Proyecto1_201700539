@@ -1,25 +1,18 @@
-const mobileNav = document.querySelector(".hamburger");
-const navbar = document.querySelector(".menubar");
-import parse from "./parser/parser.js";
-import Environment from './scripts/symbol/env.js';
-let archivos = []
 
-
-
-
-function TablaSimbolos(){
-
-}
+let archivos = [];
 
 
 
 
 
-const toggleNav = () => {
-  navbar.classList.toggle("active");
-  mobileNav.classList.toggle("hamburger-active");
-};
-mobileNav.addEventListener("click", () => toggleNav());
+
+
+
+// const toggleNav = () => {
+//   navbar.classList.toggle("active");
+//   mobileNav.classList.toggle("hamburger-active");
+// };
+// mobileNav.addEventListener("click", () => toggleNav());
 
 
 //se guarda la data del archivo
@@ -56,20 +49,13 @@ function numeros(){
   }, (_, i) => `<div>${i + 1}</div>`).join('');
 }
 //aca se hace la ejecucion y analisis del codigo
-function Ejecutar(){
-    const texto = document.getElementById("texto1").value;
-    let result = parse(texto);
-    let global = new Environment(null);
-    result.forEach((element)=>{
-      element.execute(global);
-    });
-    console.log(result);
-}
+
+
 /* When the user clicks on the button,
 toggle between hiding and showing the dropdown content */
 function myFunction() {
     document.getElementById("myDropdown").classList.toggle("show");
-  }
+}
   
   // Close the dropdown menu if the user clicks outside of it
   window.onclick = function(event) {
@@ -83,7 +69,22 @@ function myFunction() {
         }
       }
     }
+    if (!event.target.matches('.dropbtn1')) {
+      var dropdowns = document.getElementsByClassName("dropdown-content1");
+      var i;
+      for (i = 0; i < dropdowns.length; i++) {
+        var openDropdown = dropdowns[i];
+        if (openDropdown.classList.contains('show')) {
+          openDropdown.classList.remove('show');
+        }
+      }
+    }
 }
+function myFunction1() {
+  document.getElementById("myDropdown1").classList.toggle("show");
+}
+
+
 
 function openFile(){
     let input = document.createElement('input');
